@@ -49,6 +49,8 @@ Application::Application(std::string title, int w, int h, int argc, char const *
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);           // 3.0+ only
 
+    glfwWindowHint(GLFW_SCALE_TO_MONITOR, GL_TRUE); // 3.0+ only
+
     // Create window with graphics context
     m_Window = glfwCreateWindow(w, h, title.c_str(), NULL, NULL);
     if (!m_Window)
@@ -94,12 +96,17 @@ Application::Application(std::string title, int w, int h, int argc, char const *
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
+    // ImGui::StyleColorsClassic();
     ImPlot::StyleColorsDark();
-    // ImGui::StyleColorsLight();
-    // ClearColor = ImVec4(0.15f, 0.16f, 0.21f, 1.00f);
+
+    // get the current DPI scaling from glfw
+    float xscale, yscale;
+    glfwGetWindowContentScale(m_Window, &xscale, &yscale);
+    io.FontGlobalScale = xscale;
+    LOG_INFO("DPI Scaling: {}x{}", xscale, yscale);
 
     ImGuiStyle &style = ImGui::GetStyle();
-    style.ScaleAllSizes(APP_SCALE);
+    style.ScaleAllSizes(xscale);
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
     {
         style.WindowRounding = 0.0f;
@@ -111,14 +118,11 @@ Application::Application(std::string title, int w, int h, int argc, char const *
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     // load fonts
-    m_fonts["menu"] =
-        io.Fonts->AddFontFromFileTTF("resource/fonts/Roboto-Medium.ttf", FONT_SCALE * 16.0f);
-    // m_fonts["mono"] = io.Fonts->AddFontFromFileTTF("resource/fonts/ProggyClean.ttf", FONT_SCALE
-    // * 14.0f);
-    // m_fonts["mono"] = io.Fonts->AddFontFromFileTTF("resource/fonts/ProggyTiny.ttf", FONT_SCALE
-    // * 14.0f);
+    m_fonts["menu"] = io.Fonts->AddFontFromFileTTF("resource/fonts/Roboto-Medium.ttf", 16.0f);
+    // m_fonts["mono"] = io.Fonts->AddFontFromFileTTF("resource/fonts/ProggyClean.ttf", 14.0f);
+    // m_fonts["mono"] = io.Fonts->AddFontFromFileTTF("resource/fonts/ProggyTiny.ttf", 14.0f);
     m_fonts["mono"] = io.Fonts->AddFontDefault();
-    // io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", FONT_SCALE * 12.0f);
+    // io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 12.0f);
 }
 
 Application::~Application()

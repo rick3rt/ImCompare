@@ -1,7 +1,9 @@
 build/
-vendor/
 .vscode/
 archive/
+vendor/
+!vendor/CMakelists.txt
+
 # Prerequisites
 *.d
 

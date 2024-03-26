@@ -1,5 +1,6 @@
 #include "Log.h"
 #include "Explorer.h"
+#include "FolderManager.h"
 
 void runApp()
 {
@@ -7,27 +8,22 @@ void runApp()
     app.Run();
 }
 
-// #include "FileDialog.h"
-// #include "FileSystem.h"
-
-// void test()
-// {
-
-//     std::filesystem::path open = FileDialog::Open();
-//     std::filesystem::path save = FileDialog::SaveAs(open);
-//     LOG_INFO("File Open: {}", open);
-//     LOG_INFO("File Save: {}", save);
-
-//     std::string demo = "hahahahahhahahahahahaha";
-//     FileSystem::Save(save, demo);
-// }
-
 int main()
 {
     Log::Init(); // initialize logger
 
     runApp();
-    // test();
+
+    LOG_INFO("Testing FolderManager");
+    FolderManager folderManager;
+    folderManager.SetRoot("C:/Users/rickw/LocalDocuments/Code/C++/DataExplorer/resource/example/");
+    const DirectoryNode &rootNode = folderManager.GetRootNode();
+    folderManager.RecursivelyPrintDirectoryNode(rootNode);
+
+    // std::vector<DirectoryNode> files;
+    // folderManager.RecursivelyGetFiles(rootNode, files);
+    // for (const auto &file : files)
+    //     LOG_INFO("File: {0}", file.FullPath);
 
     return 0;
 }

@@ -6,6 +6,7 @@
 #include "Menu.h"
 #include "Viewer.h"
 #include "CompareManager.h"
+#include "FolderManager.h"
 
 class Explorer : public Application
 {
@@ -17,20 +18,22 @@ class Explorer : public Application
     void Start() override;
     void Update() override;
 
-    void Open();
-    void Save();
-    void SaveAs();
+    void OpenFolder();
+    void SaveSession();
 
     virtual void OnDrop(std::vector<std::string> files) override; // dropping files from OS
 
-  private:
-    std::filesystem::path m_CurrentFile;
-    std::string m_Content;
+    void SetBasePath(std::filesystem::path path);
+
+  public:
+    // getters
+    inline Viewer &GetViewer() { return m_Viewer; }
 
   private:
     Menu m_Menu;
     Viewer m_Viewer;
     CompareManager m_CompareManager;
+    FolderManager m_FolderManager;
 
   private:
     static Explorer *s_Instance;

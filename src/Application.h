@@ -7,8 +7,8 @@
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 
-#define APP_SCALE 1.0f  // 2.0f
-#define FONT_SCALE 1.0f // 3.0f
+// #define APP_SCALE 2.0f  // 2.0f
+// #define FONT_SCALE 1.0f // 3.0f
 
 // Barebones Application Framework
 class Application

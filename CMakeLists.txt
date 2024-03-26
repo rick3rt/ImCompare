@@ -23,6 +23,8 @@ endif()
 
 # ########################################################################################
 add_subdirectory(vendor) # include third party libraries
+add_subdirectory(test) # 
+add_subdirectory(example) # test example imgui  
 
 
 # ########################################################################################
@@ -39,6 +41,8 @@ set(SRCS_TO_BUILD
     ${PROJECT_SOURCE_DIR}/src/Viewer.cpp
     ${PROJECT_SOURCE_DIR}/src/ImageLoader.cpp
     ${PROJECT_SOURCE_DIR}/src/FileDialog.cpp
+    ${PROJECT_SOURCE_DIR}/src/FileManager.cpp
+    ${PROJECT_SOURCE_DIR}/src/FolderManager.cpp
     ${PROJECT_SOURCE_DIR}/src/Application.cpp
     ${PROJECT_SOURCE_DIR}/src/CompareManager.cpp
     ${VENDOR_PATH}/imgui/backends/imgui_impl_glfw.cpp # imgui backend

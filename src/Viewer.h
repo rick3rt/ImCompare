@@ -2,15 +2,25 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <filesystem>
 #include <imgui.h>
 #include <implot.h>
 #include "ImageLoader.h"
+#include "Log.h"
 
 struct ViewData
 {
     std::string name;
     std::string info;
-    std::shared_ptr<ImageTexture> texture;
+    std::filesystem::path path;
+    ImageTexture texture;
+
+    ViewData(const std::string &name_, const std::string &info_, const std::filesystem::path &path_)
+        : name(name_), info(info_), path(path_), texture(path_)
+    {
+    }
+    ~ViewData() {}
+    bool isValid() const { return texture.IsInitialized(); }
 };
 
 class Viewer
@@ -19,17 +29,20 @@ class Viewer
     Viewer();
     ~Viewer();
 
+    // item management
+    void ListItems();
+    void ClearItems();
+    void AddItem(const std::string &name, const std::string &info, const std::filesystem::path &path);
+
+    void Update(); // draw the viewer
+
+  private: // internal drawing methods
     void DrawItem(const int index);
-
     void DrawSideBySide();
-
     void DrawTabbed();
-
-    void Update();
 
   private:
     bool m_SideBySide = false;
-    std::vector<ViewData> m_Items;
-    std::shared_ptr<ImageTexture> m_ImageTexture;
+    std::vector<std::shared_ptr<ViewData>> m_Items;
     ImPlotRect m_AxesLimits;
 };

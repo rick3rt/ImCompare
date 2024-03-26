@@ -1,19 +1,30 @@
 #pragma once
 #include <cstdint>
+#include <filesystem>
 #include "GL/glew.h"
 
-struct ImageTexture
+class ImageTexture
 {
-    GLuint texture = 0;
-    int width = 0;
-    int height = 0;
-    bool initialized = false;
+  private:
+    GLuint m_Texture = 0;
+    int m_Width = 0;
+    int m_Height = 0;
+    bool m_Initialized = false;
 
+  public:
+    ImageTexture() {}
     ImageTexture(const char *filename);
+    ImageTexture(const std::filesystem::path &filename);
     ImageTexture(const uint8_t *image_data, int image_width, int image_height);
     ~ImageTexture();
+
     bool Update(const char *filename);
     bool Update(const uint8_t *new_image_data, int new_image_width, int new_image_height);
+
+    inline GLuint Texture() const { return m_Texture; }
+    inline int Width() const { return m_Width; }
+    inline int Height() const { return m_Height; }
+    inline bool IsInitialized() const { return m_Initialized; }
 };
 
 // Simple helper function to load an image into a OpenGL texture with common settings

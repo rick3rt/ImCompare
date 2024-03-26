@@ -1,19 +1,17 @@
 include(FetchContent)
 
 
-
-
-
 # =============================================================================
 # FETCHCONTENT
 # =============================================================================
 # Dear ImGui -- imgui
 # GIT_TAG 9aae45eb4a05a5a1f96be1ef37eb503a12ceb889 # 1.88
 # GIT_TAG d7aca168eee54e1423e362384a3cfeec92b22563 # docking
+# GIT_TAG 20e1caec858caa8123a6d52d410fa3f2578d3054 # docking 21-12-2023
 FetchContent_Declare(
     imgui
     GIT_REPOSITORY https://github.com/ocornut/imgui
-    GIT_TAG d7aca168eee54e1423e362384a3cfeec92b22563 # docking
+    GIT_TAG 20e1caec858caa8123a6d52d410fa3f2578d3054 # docking
     SOURCE_DIR ${VENDOR_PATH}/imgui # to download to local dir
 )
 FetchContent_MakeAvailable(imgui)
@@ -44,7 +42,7 @@ target_include_directories(imgui
 FetchContent_Declare(
     glfw
     GIT_REPOSITORY https://github.com/glfw/glfw
-    GIT_TAG 45ce5ddd197d5c58f50fdd3296a5131c894e5527 # 3.3.7
+    GIT_TAG 3.3.9 # 3.3.7
     SOURCE_DIR ${VENDOR_PATH}/glfw # to download to local dir
 )
 FetchContent_GetProperties(glfw)
@@ -65,7 +63,7 @@ endif()
 FetchContent_Declare(
     glew
     GIT_REPOSITORY https://github.com/Perlmint/glew-cmake
-    GIT_TAG f456deace7b408655109aaeff71421ef2d3858c6 # 2.2.0
+    GIT_TAG glew-cmake-2.2.0 # 2.2.0
     SOURCE_DIR ${VENDOR_PATH}/glew # to download to local dir
 )
 FetchContent_MakeAvailable(glew)
@@ -100,7 +98,7 @@ FetchContent_MakeAvailable(spdlog)
 FetchContent_Declare(
     implot
     GIT_REPOSITORY https://github.com/epezent/implot
-    GIT_TAG 15e494b76a78b44ae2c1b76608ff9bc39a661409 # 0.14
+    GIT_TAG v0.16
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/implot # to download to local dir
 )
 FetchContent_MakeAvailable(implot)

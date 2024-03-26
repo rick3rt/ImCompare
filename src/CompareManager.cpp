@@ -1,92 +1,117 @@
 #include "CompareManager.h"
 #include "Core.h"
-
 #include "FileManager.h"
 #include "misc/cpp/imgui_stdlib.h"
-
-// ==================================================================================
-void DirectoryNodeCallback(DirectoryNode &outputNode)
-{
-    LOG_INFO("DirectoryNodeCallback: {}", outputNode.FullPath);
-}
+#include "GuiHelpers.h"
 
 // ==================================================================================
 
 CompareManager::CompareManager()
-{
-    m_BasePath = std::filesystem::current_path().string();
-    m_FileManager.SetRoot(m_BasePath);
+{ // SetBasePath(std::filesystem::current_path());
+    SetBasePath(
+        "C:/Users/rickw/LocalDocuments/Code/C++/DataExplorer/build/Debug/resource/example/folders");
+    // SetBasePath("C:/Users/rickw/LocalDocuments/Code/C++/DataExplorer/build/Debug/resource/example/files");
+
+    m_RegexComparer.SetRegexString(R"((Medium\d)\\(Apod\d))");
 }
 
 CompareManager::~CompareManager() {}
 
-// void CompareManager::UpdateDirectory() { WalkDirectory(); }
-
-void CompareManager::FixBasePath()
+void CompareManager::SetBasePath(std::filesystem::path path)
 {
-    // replace all / with \ in basepath
-    std::replace(m_BasePath.begin(), m_BasePath.end(), '/', '\\');
-
-    // if basepath does not end with / or \, add it
-    if (m_BasePath.back() != '\\' && m_BasePath.back() != '\\') { m_BasePath += '\\'; }
+    m_BasePath = path.string();
+    m_FileManager.SetRoot(path);
+    m_RegexComparer.SetFiles(m_FileManager.RecursivelyGetFilesStripRoot());
 }
 
 void CompareManager::Update()
 {
-    // struct UpdateCallbacks
-    // {
-    //     static int PathUpdateCallback(ImGuiInputTextCallbackData *data)
-    //     {
-    //         CompareManager *ptr = (CompareManager *)data->UserData;
-    //         ptr->WalkDirectory();
-    //         return 0;
-    //     }
-    // };
-
     if (ImGui::Begin("Compare Manager"))
     {
-        if (ImGui::InputText("Base Path", &m_BasePath, ImGuiInputTextFlags_EnterReturnsTrue))
+        if (ImGui::InputText("Base Path", &m_BasePath)) { m_FileManager.SetRoot(m_BasePath); }
+        if (ImGui::Button("Clear"))
         {
-            // updated. walk directory
-            FixBasePath();
-            // WalkDirectory();
-            m_FileManager.SetRoot(m_BasePath);
+            Explorer::Get().GetViewer().ClearItems();
+            m_FileManager.ClearSelection();
         }
-        // for (auto &path : m_FolderContents)
-        // {
-        //     ImGui::Text(path.c_str());
-        // }
-        DirectoryNode selectedNode;
-        if (m_FileManager.RecursivelyDisplayDirectoryNode(m_FileManager.GetRootNode(),
-                                                          DirectoryNodeCallback, selectedNode))
-        {
-            LOG_INFO("RecursivelyDisplayDirectoryNode Clicked");
-            LOG_INFO("Selected Node: {}", selectedNode.FullPath);
-        }
+        // ImGui::SameLine();
     }
     ImGui::End();
 
-    if (ImGui::Begin("Demo")) {}
-    ImGui::End();
-}
+    if (ImGui::Begin("Compare Manager (Advanced)"))
+    {
+        if (ImGui::InputText("Base Path", &m_BasePath))
+        {
+            m_FileManager.SetRoot(m_BasePath);
+            m_RegexComparer.SetFiles(m_FileManager.RecursivelyGetFilesStripRoot());
+        }
+        if (ImGui::Button("Clear"))
+        {
+            Explorer::Get().GetViewer().ClearItems();
+            m_FileManager.ClearSelection();
+        }
 
-// void CompareManager::WalkDirectory()
-// {
-//     m_FolderContents.clear();
-//     // check if basepath exists
-//     if (!std::filesystem::exists(m_BasePath))
-//     {
-//         LOG_ERROR("Base path does not exist: {0}", m_BasePath);
-//         return;
-//     }
-//     std::filesystem::recursive_directory_iterator dirIter(m_BasePath);
-//     for (const auto &entry : dirIter)
-//     {
-//         std::string path = entry.path().string();
-//         // Strip the base path
-//         path = path.substr(m_BasePath.size());
-//         // items that are directories and start with a .
-//         if (entry.is_directory() && path[0] == '.') { continue; }
-//         m_FolderContents.push_back(path);
-//     }
-// }
+        if (ImGui::InputText("Regex", m_RegexComparer.GetRegexString())) { m_RegexComparer.Compile(); }
+        ImGui::SameLine();
+        bool regex_valid = m_RegexComparer.GetRegexValid();
+        ImGui::Checkbox("Regex Valid", &regex_valid);
+
+        ImGui::BeginDisabled(!regex_valid);
+
+        if (regex_valid)
+        {
+            m_RegexComparer.Compute();
+            std::vector<std::set<std::string>> options = m_RegexComparer.GetOptions();
+
+            int max_rows = 0;
+            int num_groups = options.size();
+            for (auto &option : options)
+                if (option.size() > max_rows) { max_rows = option.size(); }
+
+            // render buttons in a table
+            if (num_groups > 0 &&
+                ImGui::BeginTable("optionTable", num_groups, ImGuiTableFlags_SizingFixedFit))
+            {
+                for (int row = 0; row < max_rows; row++)
+                {
+                    ImGui::TableNextRow();
+                    for (int col = 0; col < num_groups; col++)
+                    {
+                        ImGui::TableSetColumnIndex(col);
+                        // ImGui::Text("test r%i - c%i", row, col);
+                        if (options[col].size() > row)
+                        {
+                            std::string lbl = *std::next(options[col].begin(), row);
+                            ImGui::Button(lbl.c_str());
+                        }
+                    }
+                }
+
+                ImGui::EndTable();
+            }
+        }
+        ImGui::EndDisabled();
+        ImGui::End();
+
+        if (ImGui::Begin("File Manager"))
+        {
+            bool selection_changed =
+                m_FileManager.RecursivelyDisplayDirectoryNode(m_FileManager.GetRootNode());
+            if (selection_changed)
+            {
+                const std::vector<const DirectoryNode *> &m_Selection = m_FileManager.GetSelection();
+                auto &v = Explorer::Get().GetViewer();
+                v.ClearItems(); // clear last items, and add new
+                for (auto &node : m_Selection)
+                {
+                    if (node->IsDirectory) { continue; } // skip directories
+                    std::string filename = node->FileName;
+                    std::filesystem::path path = node->FullPath;
+                    std::string info = node->FileName;
+                    v.AddItem(filename, info, path);
+                }
+            }
+        }
+        ImGui::End();
+    }
+}
