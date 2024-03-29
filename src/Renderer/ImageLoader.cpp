@@ -1,13 +1,13 @@
 #include <iostream>
 #include "ImageLoader.h"
-#include "Log.h"
+#include "Core/Log.h"
 // include here to compile.
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 ImageTexture::ImageTexture(const char *filename)
 {
-    LOG_INFO("Loading texture from file: {}", filename);
+    LOG_TRACE("Loading texture from file: {}", filename);
     m_Initialized = LoadTextureFromFile(filename, &m_Texture, &m_Width, &m_Height);
     if (!m_Initialized) { LOG_ERROR("Failed to load texture from file: {}", filename); }
     LOG_TRACE("Texture loaded into texture id: {}", m_Texture);
@@ -17,7 +17,7 @@ ImageTexture::ImageTexture(const std::filesystem::path &filename)
 {
     const std::string filename_string = filename.string();
     const char *filename_char = filename_string.c_str();
-    LOG_INFO("Loading texture from file: {}", filename);
+    LOG_TRACE("Loading texture from file: {}", filename);
     m_Initialized = LoadTextureFromFile(filename_char, &m_Texture, &m_Width, &m_Height);
     if (!m_Initialized) { LOG_ERROR("Failed to load texture from file: {}", filename); }
     LOG_TRACE("Texture loaded into texture id: {}", m_Texture);
@@ -38,7 +38,7 @@ ImageTexture::~ImageTexture()
 
 bool ImageTexture::Update(const char *filename)
 {
-    LOG_INFO("Updating texture from file: {}", filename);
+    LOG_TRACE("Updating texture from file: {}", filename);
     m_Initialized = LoadTextureFromFile(filename, &m_Texture, &m_Width, &m_Height);
     if (!m_Initialized) { LOG_ERROR("Failed to load texture from file: {}", filename); }
     return m_Initialized;

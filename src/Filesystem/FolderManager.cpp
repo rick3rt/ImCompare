@@ -17,22 +17,11 @@ bool FolderManager::Update()
         }
         ImGui::SameLine();
         ImGui::Text(m_rootNode.FullPath.c_str());
+        ImGui::SameLine();
+        ImGui::Text("CurrentMaxLevel: %i", m_CurrentMaxLevel);
 
         bool file_clicked = RecursivelyDisplayDirectoryNode(GetRootNode());
-        if (file_clicked)
-        {
-            auto &viewer = Explorer::Get().GetViewer();
-            viewer.ClearItems();
-            for (auto &sf : m_SelectedFiles)
-            {
-                const DirectoryNode *node = sf.node;
-                if (!node || node->IsDirectory) { continue; } // skip directories
-                std::string filename = node->FileName;
-                std::filesystem::path path = node->FullPath;
-                std::string info = node->FileName;
-                viewer.AddItem(filename, info, path);
-            }
-        }
+        if (file_clicked) { RenderFileSelection(); }
     }
     ImGui::End();
     return true;
@@ -47,6 +36,8 @@ void FolderManager::SetRoot(const std::filesystem::path &rootPath)
         return;
     }
     m_rootPath = rootPath;
+    ClearFileSelection(); // clear references to old nodes
+    ClearSelection();     // clear references to old nodes
     m_rootNode = CreateDirectryNodeTreeFromPath(m_rootPath);
 }
 
@@ -74,11 +65,22 @@ void FolderManager::PropagateSelection(int level)
     // update file selection
     for (auto &file : m_SelectedFiles)
     {
-        const auto &children = m_Selection[file.level - 1].second->Children;
-        if (children.size() > file.index)
-            file.node = &children[file.index];
-        else
-            file.node = nullptr;
+        const auto &new_node = m_Selection[file.level - 1].second;
+        if (new_node)
+        {
+            const auto &children = new_node->Children;
+            if (children.size() > file.index)
+            {
+                file.node = &children[file.index];
+                continue;
+            }
+        }
+
+        // delete file from m_SelectedFiles vector
+        for (auto it = m_SelectedFiles.begin(); it != m_SelectedFiles.end();)
+        {
+            it = m_SelectedFiles.erase(it);
+        }
     }
 
     // for (int i = level + 1; i < m_Selection.size()-1; i++)
@@ -87,6 +89,23 @@ void FolderManager::PropagateSelection(int level)
     //     if (children == nullptr) { continue; }
 
     // }
+}
+
+void FolderManager::RenderFileSelection()
+{
+    auto &viewer = Explorer::Get().GetViewer();
+    viewer.ClearItems();
+    LOG_DEBUG("RenderFileSelection");
+    for (auto &sf : m_SelectedFiles)
+    {
+        LOG_DEBUG("Selected file: level {} idx {} name {}", sf.level, sf.index, sf.node->FileName);
+        const DirectoryNode *node = sf.node;
+        if (!node || node->IsDirectory) { continue; } // skip directories
+        std::string filename = node->FileName;
+        std::filesystem::path path = node->FullPath;
+        std::string info = node->FileName;
+        viewer.AddItem(filename, info, path);
+    }
 }
 
 bool fileInSelection(const std::vector<SelectedFileRef> &selection, int level, int index,
@@ -150,7 +169,35 @@ bool FolderManager::RecursivelyDisplayDirectoryNode(const DirectoryNode &parentN
     const DirectoryNode *child = m_Selection[level].second;
     if (child != nullptr && child->IsDirectory)
         clicked |= RecursivelyDisplayDirectoryNode(*child, level + 1);
+    else
+        m_CurrentMaxLevel = level; // set max level
     return clicked;
+}
+
+void FolderManager::IncrementFolder(int level)
+{
+    // typedef std::pair<int, const DirectoryNode *> indexed_selection_t;
+    // typedef std::array<indexed_selection_t, 20> selection_t;
+    // selection_t m_Selection;
+    LOG_DEBUG("IncrementFolder: level {}", level);
+    for (int i = level; i < m_CurrentMaxLevel; i++)
+    {
+        LOG_DEBUG("IncrementFolder: level {} index {} node {}", i, m_Selection[i].first,
+                  m_Selection[i].second->FileName);
+    }
+
+    const DirectoryNode *parent;
+    if (level > 0)
+        parent = m_Selection[level - 1].second;
+    else
+        parent = &m_rootNode;
+
+    int index = (m_Selection[level].first + 1) % parent->Children.size();
+    m_Selection[level].first = index;
+    m_Selection[level].second = &(parent->Children[index]);
+
+    PropagateSelection(level);
+    RenderFileSelection();
 }
 
 // static functions

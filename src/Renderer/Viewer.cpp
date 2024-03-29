@@ -107,9 +107,9 @@ void Viewer::Update()
 {
     if (ImGui::Begin("View Manager"))
     {
-        ImGui::Checkbox("Side by Side", &m_SideBySide);
+        ImGui::Checkbox("Auto fit", &m_AutoFit);
         ImGui::SameLine();
-        ImGui::Checkbox("Autofit", &m_AutoFit);
+        ImGui::Checkbox("Side by Side", &m_SideBySide);
         if (m_SideBySide)
             DrawSideBySide();
         else

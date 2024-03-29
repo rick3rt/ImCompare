@@ -6,9 +6,18 @@
 #include <array>
 #include "DirectoryNode.h"
 
+// indexed_selection_t constist of an index in the preceding folder and a pointer to the selected
+// DirectoryNode
 typedef std::pair<int, const DirectoryNode *> indexed_selection_t;
+// selection_t is an array that contains the selected folder for all levels. Supports max 20 levels. That
+// is way too much and doesnt fit the screen, but resistant up to a certain point to click spamming.
 typedef std::array<indexed_selection_t, 20> selection_t;
 
+// SelectedFileRef is a struct that contains the level, index and a pointer to the selected
+// DirectoryNode. level and index keeping helps to update the selected files when the folder structure is
+// changed. If the index in a higher folder is changed, the selected files are updated to files that
+// match the old files index. If there is no file at that index in that new folder, then the entry is
+// removed from the selected file list.
 struct SelectedFileRef
 {
     int level;
@@ -30,6 +39,7 @@ class FolderManager
     std::string m_Filter;             // filter, extracted from root path, e.g. *.png
     DirectoryNode m_rootNode;
     selection_t m_Selection;
+    int m_CurrentMaxLevel = 0;
     std::vector<SelectedFileRef> m_SelectedFiles;
 
   public:
@@ -55,7 +65,10 @@ class FolderManager
     // returns true if an item is clicked
     bool RecursivelyDisplayDirectoryNode(const DirectoryNode &parentNode, int level = 0);
 
+    void IncrementFolder(int level);
     void PropagateSelection(int level);
+
+    void RenderFileSelection();
 
     // static functions
     static DirectoryNode CreateDirectryNodeTreeFromPath(const std::filesystem::path &rootPath);

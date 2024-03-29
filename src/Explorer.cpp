@@ -25,7 +25,7 @@ void Explorer::Update()
     m_FolderManager.Update();
     m_Viewer.Update();
 
-    ImGui::ShowDemoWindow();
+    // ImGui::ShowDemoWindow();
     // ImPlot::ShowDemoWindow();
 }
 

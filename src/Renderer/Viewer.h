@@ -43,11 +43,17 @@ class Viewer
     void DrawTabbed();
 
   public:
-    // void ShowTab(const int index);
+    // some functions for keyboard control
+    void ToggleSideBySide() { m_SideBySide = !m_SideBySide; }
+    void ToggleAutoFit() { m_AutoFit = !m_AutoFit; }
     void ShowNextTab()
     {
         m_SelectedTab++;
         if (m_SelectedTab >= m_Items.size()) m_SelectedTab = 0;
+    }
+    void ShowTab(int index)
+    {
+        if (index >= 0 && index < m_Items.size()) m_SelectedTab = index;
     }
 
   private:

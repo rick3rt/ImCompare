@@ -12,7 +12,7 @@ void test_operators();
 int main()
 {
     Log::Init(); // initialize logger
-
+    Log::SetLogLevel(spdlog::level::debug);
     runApp();
 
     // LOG_INFO("Testing FolderManager");

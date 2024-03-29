@@ -8,7 +8,7 @@ class Log
 {
   public:
     static void Init();
-
+    static void SetLogLevel(spdlog::level::level_enum level) { s_Logger->set_level(level); }
     inline static std::shared_ptr<spdlog::logger> &GetLogger() { return s_Logger; }
 
   private:
