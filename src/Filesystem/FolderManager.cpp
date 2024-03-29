@@ -1,24 +1,10 @@
+#include <imgui.h>
 #include "Core/Log.h"
+#include "Explorer.h"
 #include "Filesystem/FolderManager.h"
 #include "Filesystem/FileDialog.h"
-#include <imgui.h>
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
-
-// selection
-//         0        0       0       1
-// depth   0        1       2       3
-//         resource
-//         |        example
-//         |        |       filename
-//         |        |       folders
-//         |        |       |       Medium1
-//         |        |       |       Medium2
-//         |        |       blank.jpg
-//         |        fonts
-//         |        img
-
-// std::vector<const DirectoryNode &> selection
 
 bool FolderManager::Update()
 {
@@ -31,7 +17,22 @@ bool FolderManager::Update()
         }
         ImGui::SameLine();
         ImGui::Text(m_rootNode.FullPath.c_str());
-        RecursivelyDisplayDirectoryNode(GetRootNode());
+
+        bool file_clicked = RecursivelyDisplayDirectoryNode(GetRootNode());
+        if (file_clicked)
+        {
+            auto &viewer = Explorer::Get().GetViewer();
+            viewer.ClearItems();
+            for (auto &sf : m_SelectedFiles)
+            {
+                const DirectoryNode *node = sf.node;
+                if (!node || node->IsDirectory) { continue; } // skip directories
+                std::string filename = node->FileName;
+                std::filesystem::path path = node->FullPath;
+                std::string info = node->FileName;
+                viewer.AddItem(filename, info, path);
+            }
+        }
     }
     ImGui::End();
     return true;
@@ -49,15 +50,11 @@ void FolderManager::SetRoot(const std::filesystem::path &rootPath)
     m_rootNode = CreateDirectryNodeTreeFromPath(m_rootPath);
 }
 
-bool FolderManager::RecursivelyPrintDirectoryNode(const DirectoryNode &parentNode, int level)
+void FolderManager::ClearSelection()
 {
-    for (const auto &child : parentNode.Children)
-    {
-        std::string indent(level * 4, ' ');
-        LOG_INFO("{}{}", indent, child.FileName);
-        if (child.Children.size() > 0) { RecursivelyPrintDirectoryNode(child, level + 1); }
-    }
-    return true;
+    // clear and reset
+    for (auto &selection : m_Selection)
+        selection = std::make_pair(0, nullptr);
 }
 
 void FolderManager::PropagateSelection(int level)
@@ -73,6 +70,33 @@ void FolderManager::PropagateSelection(int level)
         m_Selection[i].first = index;
         m_Selection[i].second = &children[index];
     }
+
+    // update file selection
+    for (auto &file : m_SelectedFiles)
+    {
+        const auto &children = m_Selection[file.level - 1].second->Children;
+        if (children.size() > file.index)
+            file.node = &children[file.index];
+        else
+            file.node = nullptr;
+    }
+
+    // for (int i = level + 1; i < m_Selection.size()-1; i++)
+    // {
+    //     const DirectoryNode *children = m_Selection[i].second;
+    //     if (children == nullptr) { continue; }
+
+    // }
+}
+
+bool fileInSelection(const std::vector<SelectedFileRef> &selection, int level, int index,
+                     const DirectoryNode *node)
+{
+    for (const auto &file : selection)
+    {
+        if (file.level == level && file.index == index && file.node == node) { return true; }
+    }
+    return false;
 }
 
 bool FolderManager::RecursivelyDisplayDirectoryNode(const DirectoryNode &parentNode, int level)
@@ -82,20 +106,40 @@ bool FolderManager::RecursivelyDisplayDirectoryNode(const DirectoryNode &parentN
     if (listbox_label.empty()) { listbox_label = "Root"; }
     listbox_label = "##" + listbox_label;
 
-    if (ImGui::BeginListBox(listbox_label.c_str(), ImVec2(400, 250)))
+    if (ImGui::BeginListBox(listbox_label.c_str(), ImVec2(200, 150)))
     {
         for (int i = 0; i < parentNode.Children.size(); i++)
         {
             const DirectoryNode &child = parentNode.Children[i];
             const bool is_selected = (m_Selection[level].first == i);
-            // optional todo:
-            //  move files to the bottom. either in render or sort when constructing the tree
+            // const bool show_selected = (is_selected || found);
             if (ImGui::Selectable(child.FileName.c_str(), is_selected))
             {
                 m_Selection[level] = std::make_pair(i, &child);
+                PropagateSelection(level); // update other child nodes
+
+                // if child is file, add to selected files
+                const bool found = fileInSelection(m_SelectedFiles, level, i, &child);
+                if (!child.IsDirectory && !found)
+                {
+                    // detect if cntrl is pressed
+                    if (!ImGui::GetIO().KeyCtrl)
+                        m_SelectedFiles.push_back(SelectedFileRef(level, i, &child));
+                    else
+                    {
+                        // remove file from selection
+                        for (auto it = m_SelectedFiles.begin(); it != m_SelectedFiles.end();)
+                        {
+                            if (it->level == level && it->index == i && it->node == &child)
+                                it = m_SelectedFiles.erase(it);
+                            else
+                                ++it;
+                        }
+                    }
+                }
                 clicked = true;
-                PropagateSelection(level); // update other child nodes but keep
             }
+
             // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
             if (is_selected) ImGui::SetItemDefaultFocus();
         }
@@ -104,27 +148,12 @@ bool FolderManager::RecursivelyDisplayDirectoryNode(const DirectoryNode &parentN
 
     ImGui::SameLine();
     const DirectoryNode *child = m_Selection[level].second;
-    if (child != nullptr && child->IsDirectory) RecursivelyDisplayDirectoryNode(*child, level + 1);
+    if (child != nullptr && child->IsDirectory)
+        clicked |= RecursivelyDisplayDirectoryNode(*child, level + 1);
     return clicked;
 }
 
-void FolderManager::RecursivelyAddDirectoryNodes(DirectoryNode &parentNode,
-                                                 std::filesystem::directory_iterator directoryIterator)
-{
-    for (const auto &entry : directoryIterator)
-    {
-        DirectoryNode node;
-        node.FullPath = entry.path().string();
-        node.FileName = entry.path().filename().string();
-        node.IsDirectory = entry.is_directory();
-        parentNode.Children.push_back(node);
-        if (entry.is_directory())
-        {
-            std::filesystem::directory_iterator it(entry);
-            RecursivelyAddDirectoryNodes(parentNode.Children.back(), it);
-        }
-    }
-}
+// static functions
 
 DirectoryNode FolderManager::CreateDirectryNodeTreeFromPath(const std::filesystem::path &rootPath)
 {
@@ -153,26 +182,63 @@ void FolderManager::RecursivelyGetFiles(const DirectoryNode &node, std::vector<D
     }
 }
 
-// Path: src/FileManager.cpp
-// Compare this snippet from src/main.cpp:
-// #include "Log.h"
-// #include "Explorer.h"
-//
-// void runApp()
-// {
-//     Explorer app("DataExplorer", 1280, 760, 0, nullptr);
-//     app.Run();
-// }
-//
-// int main()
-// {
-//     Log::Init(); // initialize logger
-//
-//     // runApp();
-//
-//     LOG_INFO("Hello World!");
-//
-//
-//     return 0;
-// }
-// #include "FileManager.h"
+void FolderManager::RecursivelyAddDirectoryNodes(DirectoryNode &parentNode,
+                                                 std::filesystem::directory_iterator directoryIterator)
+{
+    // directoryIterator
+    for (const auto &entry : directoryIterator)
+    {
+        DirectoryNode node;
+        node.FullPath = entry.path().string();
+        node.FileName = entry.path().filename().string();
+        node.IsDirectory = entry.is_directory();
+        parentNode.Children.push_back(node);
+        if (entry.is_directory())
+        {
+            std::filesystem::directory_iterator it(entry);
+            RecursivelyAddDirectoryNodes(parentNode.Children.back(), it);
+        }
+    }
+
+    // sort parentNode.Children so directories are first
+    auto moveDirectoriesToFront = [](const DirectoryNode &a, const DirectoryNode &b) {
+        return (a.IsDirectory > b.IsDirectory);
+    };
+    std::sort(parentNode.Children.begin(), parentNode.Children.end(), moveDirectoriesToFront);
+
+    // does nork work because need to recreate the iterator
+    //   // directoryIterator
+    // // loop over all files in the directory
+    // // first handle directories
+    // for (const auto &entry : directoryIterator)
+    // {
+    //     if (!entry.is_directory()) { continue; }
+    //     DirectoryNode node;
+    //     node.FullPath = entry.path().string();
+    //     node.FileName = entry.path().filename().string();
+    //     node.IsDirectory = entry.is_directory();
+    //     parentNode.Children.push_back(node);
+    //     std::filesystem::directory_iterator it(entry);
+    //     RecursivelyAddDirectoryNodes(parentNode.Children.back(), it);
+    // }
+    // // then files
+    // for (const auto &entry : directoryIterator)
+    // {
+    //     if (entry.is_directory()) { continue; }
+    //     DirectoryNode node;
+    //     node.FullPath = entry.path().string();
+    //     node.FileName = entry.path().filename().string();
+    //     node.IsDirectory = entry.is_directory();
+    //     parentNode.Children.push_back(node);
+    // }
+}
+
+void FolderManager::RecursivelyPrintDirectoryNode(const DirectoryNode &parentNode, int level)
+{
+    for (const auto &child : parentNode.Children)
+    {
+        std::string indent(level * 4, ' ');
+        LOG_INFO("{}{}", indent, child.FileName);
+        if (child.Children.size() > 0) { RecursivelyPrintDirectoryNode(child, level + 1); }
+    }
+}

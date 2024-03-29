@@ -7,6 +7,7 @@
 #include <implot.h>
 
 #include "Core/Log.h"
+// #include "Core/Settings.h"
 #include "Core/Application.h"
 
 #include "Filesystem/FileDialog.h"

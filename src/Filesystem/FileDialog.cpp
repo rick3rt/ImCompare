@@ -27,25 +27,45 @@ std::filesystem::path FileDialog::Open()
 std::filesystem::path FileDialog::OpenFolder()
 {
     std::string initialPath = std::filesystem::current_path().string();
+    LPCWSTR initialPathWstr = std::wstring(initialPath.begin(), initialPath.end()).c_str();
 
-    BROWSEINFO bi;
-    ZeroMemory(&bi, sizeof(bi));
-    bi.hwndOwner = NULL;
-    bi.ulFlags = BIF_NEWDIALOGSTYLE | BIF_RETURNONLYFSDIRS;
-    bi.lpszTitle = "Select Folder";
-    bi.lpfn = NULL;
-    bi.lParam = (LPARAM)initialPath.c_str();
-
-    LPITEMIDLIST pidl = SHBrowseForFolder(&bi);
-    if (pidl != NULL)
+    IFileDialog *pFileDialog;
+    HRESULT hr =
+        CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pFileDialog));
+    if (SUCCEEDED(hr))
     {
-        char szPath[MAX_PATH];
-        if (SHGetPathFromIDList(pidl, szPath))
+        DWORD dwOptions;
+        pFileDialog->GetOptions(&dwOptions);
+        pFileDialog->SetOptions(dwOptions | FOS_PICKFOLDERS);
+
+        COMDLG_FILTERSPEC filterSpec[] = {{L"All Files", L"*.*"}};
+        pFileDialog->SetFileTypes(ARRAYSIZE(filterSpec), filterSpec);
+
+        pFileDialog->SetTitle(L"Select Folder");
+        pFileDialog->SetFileName(initialPathWstr);
+
+        hr = pFileDialog->Show(NULL);
+        if (SUCCEEDED(hr))
         {
-            std::string folderPath = szPath;
-            return std::filesystem::path(folderPath);
+            IShellItem *pShellItem;
+            hr = pFileDialog->GetResult(&pShellItem);
+            if (SUCCEEDED(hr))
+            {
+                PWSTR pszFolderPath;
+                hr = pShellItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFolderPath);
+                if (SUCCEEDED(hr))
+                {
+                    std::wstring folderPathWstr(pszFolderPath);
+                    std::string folderPath(folderPathWstr.begin(), folderPathWstr.end());
+                    CoTaskMemFree(pszFolderPath);
+                    pShellItem->Release();
+                    pFileDialog->Release();
+                    return std::filesystem::path(folderPath);
+                }
+                pShellItem->Release();
+            }
         }
-        CoTaskMemFree(pidl);
+        pFileDialog->Release();
     }
 
     return "";

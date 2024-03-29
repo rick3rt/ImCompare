@@ -12,6 +12,7 @@ void Menu::KeyboardShortcuts()
 
     if (ImGui::IsKeyPressed(ImGuiKey_O) && ImGui::GetIO().KeyCtrl) { Explorer::Get().OpenFolder(); }
     if (ImGui::IsKeyPressed(ImGuiKey_S) && ImGui::GetIO().KeyCtrl) { Explorer::Get().SaveSession(); }
+    if (ImGui::IsKeyPressed(ImGuiKey_Q)) { Explorer::Get().GetViewer().ShowNextTab(); }
     // if (ImGui::IsKeyPressed(ImGuiKey_S) && ImGui::GetIO().KeyCtrl && ImGui::GetIO().KeyShift)
     //     Explorer::Get().SaveAs();
 }
@@ -31,11 +32,15 @@ void Menu::DrawMenu()
             ImGui::EndMenu();
         }
 
-        if (ImGui::BeginMenu("Edit"))
+        ImGui::Separator();
+        if (ImGui::MenuItem("Clear Folder Selection", "Ctrl+C"))
+            Explorer::Get().GetFolderManager().ClearSelection();
+        if (ImGui::MenuItem("Clear Image Selection", "Ctrl+V"))
         {
-            if (ImGui::MenuItem("Test", "Ctrl+T")) { ; }
-            ImGui::EndMenu();
+            Explorer::Get().GetFolderManager().ClearFileSelection();
+            Explorer::Get().GetViewer().ClearItems();
         }
+
         ImGui::EndMainMenuBar();
     }
 }

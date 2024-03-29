@@ -42,8 +42,18 @@ class Viewer
     void DrawSideBySide();
     void DrawTabbed();
 
+  public:
+    // void ShowTab(const int index);
+    void ShowNextTab()
+    {
+        m_SelectedTab++;
+        if (m_SelectedTab >= m_Items.size()) m_SelectedTab = 0;
+    }
+
   private:
     bool m_SideBySide = false;
+    bool m_AutoFit = true;
+    int m_SelectedTab = -1;
     std::vector<std::shared_ptr<ViewData>> m_Items;
     ImPlotRect m_AxesLimits;
 };

@@ -28,6 +28,7 @@ class Explorer : public Application
   public:
     // getters
     inline Viewer &GetViewer() { return m_Viewer; }
+    inline FolderManager &GetFolderManager() { return m_FolderManager; }
 
   private:
     Menu m_Menu;

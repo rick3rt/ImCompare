@@ -7,6 +7,8 @@ Explorer::Explorer(std::string title, int w, int h, int argc, char const *argv[]
     : Application(title, w, h, argc, argv)
 {
     s_Instance = this;
+
+    // set default path
 }
 
 Explorer::~Explorer() { LOG_INFO("Deleting Explorer"); }
@@ -19,22 +21,9 @@ void Explorer::Start()
 
 void Explorer::Update()
 {
-    // m_Menu.Update();
-
-    // // Path Manager / Pattern Manager / Compare Manger
-    // m_CompareManager.Update();
-
-    // // Image Viewer
-    // m_Viewer.Update();
-
+    m_Menu.Update();
     m_FolderManager.Update();
-
-    if (ImGui::Begin("View Manager"))
-    {
-        static bool test = false;
-        ImGui::Checkbox("Side by Side", &test);
-    }
-    ImGui::End();
+    m_Viewer.Update();
 
     ImGui::ShowDemoWindow();
     // ImPlot::ShowDemoWindow();
@@ -45,7 +34,9 @@ void Explorer::OpenFolder() { m_FolderManager.SetRoot(FileDialog::OpenFolder());
 void Explorer::SaveSession()
 {
     // LOG_INFO("File Save: {}", m_CurrentFile);
-    // FileSystem::Save(m_CurrentFile, m_Content);
+    std::filesystem::path path = FileDialog::SaveAs();
+    LOG_INFO("File Save As: {}", path);
+    // FileSystem::Save("test.txt", "blablabla");
 }
 
 // void Explorer::SaveAs()
