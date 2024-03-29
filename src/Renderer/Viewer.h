@@ -5,8 +5,9 @@
 #include <filesystem>
 #include <imgui.h>
 #include <implot.h>
-#include "ImageLoader.h"
-#include "Log.h"
+
+#include "Core/Log.h"
+#include "Renderer/ImageLoader.h"
 
 struct ViewData
 {

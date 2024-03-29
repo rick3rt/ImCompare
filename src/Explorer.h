@@ -1,12 +1,12 @@
 #pragma once
 #include <filesystem>
 
-#include "Log.h"
-#include "Application.h"
-#include "Menu.h"
-#include "Viewer.h"
-#include "CompareManager.h"
-#include "FolderManager.h"
+#include "Core/Log.h"
+#include "Core/Application.h"
+#include "Core/Menu.h"
+#include "Renderer/Viewer.h"
+// #include "CompareManager.h"
+#include "Filesystem/FolderManager.h"
 
 class Explorer : public Application
 {
@@ -32,7 +32,7 @@ class Explorer : public Application
   private:
     Menu m_Menu;
     Viewer m_Viewer;
-    CompareManager m_CompareManager;
+    // CompareManager m_CompareManager;
     FolderManager m_FolderManager;
 
   private:

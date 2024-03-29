@@ -1,6 +1,4 @@
-#include "Log.h"
-#include "Explorer.h"
-#include "FolderManager.h"
+#include "Base.h"
 
 void runApp()
 {
@@ -14,11 +12,11 @@ int main()
 
     runApp();
 
-    LOG_INFO("Testing FolderManager");
-    FolderManager folderManager;
-    folderManager.SetRoot("C:/Users/rickw/LocalDocuments/Code/C++/DataExplorer/resource/example/");
-    const DirectoryNode &rootNode = folderManager.GetRootNode();
-    folderManager.RecursivelyPrintDirectoryNode(rootNode);
+    // LOG_INFO("Testing FolderManager");
+    // FolderManager folderManager;
+    // folderManager.SetRoot("C:/Users/rickw/LocalDocuments/Code/C++/DataExplorer/resource/example/");
+    // const DirectoryNode &rootNode = folderManager.GetRootNode();
+    // folderManager.RecursivelyPrintDirectoryNode(rootNode);
 
     // std::vector<DirectoryNode> files;
     // folderManager.RecursivelyGetFiles(rootNode, files);

@@ -1,6 +1,6 @@
-#include "FolderManager.h"
-#include "FileDialog.h"
-#include "Log.h"
+#include "Core/Log.h"
+#include "Filesystem/FolderManager.h"
+#include "Filesystem/FileDialog.h"
 #include <imgui.h>
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))

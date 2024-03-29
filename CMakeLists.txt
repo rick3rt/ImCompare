@@ -9,6 +9,10 @@ set(VENDOR_PATH "${PROJECT_SOURCE_DIR}/vendor")
 
 # message("VENDOR_PATH = ${VENDOR_PATH}")
 
+# add global flag _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
+# set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+add_compile_definitions(_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING)
+cmake_policy(SET CMP0048 OLD)
 
 # ########################################################################################
 # # Global flags
@@ -33,18 +37,18 @@ add_subdirectory(example) # test example imgui
 
 # define sources for AppFramework
 set(SRCS_TO_BUILD
-    ${PROJECT_SOURCE_DIR}/src/Core.h
     ${PROJECT_SOURCE_DIR}/src/main.cpp
-    ${PROJECT_SOURCE_DIR}/src/Log.cpp
     ${PROJECT_SOURCE_DIR}/src/Explorer.cpp
-    ${PROJECT_SOURCE_DIR}/src/Menu.cpp
-    ${PROJECT_SOURCE_DIR}/src/Viewer.cpp
-    ${PROJECT_SOURCE_DIR}/src/ImageLoader.cpp
-    ${PROJECT_SOURCE_DIR}/src/FileDialog.cpp
-    ${PROJECT_SOURCE_DIR}/src/FileManager.cpp
-    ${PROJECT_SOURCE_DIR}/src/FolderManager.cpp
-    ${PROJECT_SOURCE_DIR}/src/Application.cpp
-    ${PROJECT_SOURCE_DIR}/src/CompareManager.cpp
+    ${PROJECT_SOURCE_DIR}/src/Core/Core.h
+    ${PROJECT_SOURCE_DIR}/src/Core/Log.cpp
+    ${PROJECT_SOURCE_DIR}/src/Core/Menu.cpp
+    ${PROJECT_SOURCE_DIR}/src/Core/Application.cpp
+    ${PROJECT_SOURCE_DIR}/src/Renderer/Viewer.cpp
+    ${PROJECT_SOURCE_DIR}/src/Renderer/ImageLoader.cpp
+    ${PROJECT_SOURCE_DIR}/src/Filesystem/FileDialog.cpp
+    ${PROJECT_SOURCE_DIR}/src/Filesystem/FileManager.cpp
+    ${PROJECT_SOURCE_DIR}/src/Filesystem/FolderManager.cpp
+    # ${PROJECT_SOURCE_DIR}/src/CompareManager.cpp
     ${VENDOR_PATH}/imgui/backends/imgui_impl_glfw.cpp # imgui backend
     ${VENDOR_PATH}/imgui/backends/imgui_impl_opengl3.cpp # imgui backend
     ${VENDOR_PATH}/imgui/misc/cpp/imgui_stdlib.cpp # imgui stl bindings

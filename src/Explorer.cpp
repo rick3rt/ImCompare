@@ -1,5 +1,5 @@
 #include "Explorer.h"
-#include "Core.h"
+#include "Core/Core.h"
 
 Explorer *Explorer::s_Instance = nullptr;
 
@@ -40,7 +40,7 @@ void Explorer::Update()
     // ImPlot::ShowDemoWindow();
 }
 
-void Explorer::OpenFolder() { m_CompareManager.SetBasePath(FileDialog::OpenFolder()); }
+void Explorer::OpenFolder() { m_FolderManager.SetRoot(FileDialog::OpenFolder()); }
 
 void Explorer::SaveSession()
 {
@@ -57,5 +57,5 @@ void Explorer::SaveSession()
 
 void Explorer::OnDrop(std::vector<std::string> files)
 {
-    if (files.size() > 0) { m_CompareManager.SetBasePath(files[0]); }
+    if (files.size() > 0) { m_FolderManager.SetRoot(files[0]); }
 }

@@ -1,5 +1,5 @@
-#include "Viewer.h"
-#include "Core.h"
+#include "Renderer/Viewer.h"
+#include "Core/Core.h"
 
 Viewer::Viewer()
 {
