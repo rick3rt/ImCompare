@@ -134,6 +134,8 @@ bool FolderManager::RecursivelyDisplayDirectoryNode(const DirectoryNode &parentN
             // const bool show_selected = (is_selected || found);
             if (ImGui::Selectable(child.FileName.c_str(), is_selected))
             {
+                if (ImGui::GetIO().KeyCtrl) m_SelectedFiles.clear();
+
                 m_Selection[level] = std::make_pair(i, &child);
                 PropagateSelection(level); // update other child nodes
 
@@ -141,20 +143,22 @@ bool FolderManager::RecursivelyDisplayDirectoryNode(const DirectoryNode &parentN
                 const bool found = fileInSelection(m_SelectedFiles, level, i, &child);
                 if (!child.IsDirectory && !found)
                 {
+                    LOG_INFO("Control down {0}", ImGui::GetIO().KeyCtrl);
+                    m_SelectedFiles.push_back(SelectedFileRef(level, i, &child));
+
                     // detect if cntrl is pressed
-                    if (!ImGui::GetIO().KeyCtrl)
-                        m_SelectedFiles.push_back(SelectedFileRef(level, i, &child));
-                    else
-                    {
-                        // remove file from selection
-                        for (auto it = m_SelectedFiles.begin(); it != m_SelectedFiles.end();)
-                        {
-                            if (it->level == level && it->index == i && it->node == &child)
-                                it = m_SelectedFiles.erase(it);
-                            else
-                                ++it;
-                        }
-                    }
+                    // if (!ImGui::GetIO().KeyCtrl)
+                    // else
+                    // {
+                    //     // remove file from selection
+                    //     for (auto it = m_SelectedFiles.begin(); it != m_SelectedFiles.end();)
+                    //     {
+                    //         if (it->level == level && it->index == i && it->node == &child)
+                    //             it = m_SelectedFiles.erase(it);
+                    //         else
+                    //             ++it;
+                    //     }
+                    // }
                 }
                 clicked = true;
             }

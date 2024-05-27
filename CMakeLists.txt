@@ -76,9 +76,17 @@ target_link_libraries(${PROJECT_NAME}
     spdlog::spdlog
 )
 
-# add symbolic link to resource folder to build directory
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E create_symlink
-    ${CMAKE_CURRENT_SOURCE_DIR}/resource $<TARGET_FILE_DIR:${PROJECT_NAME}>/resource
-    COMMENT "symbolic link resource folder from ${CMAKE_CURRENT_SOURCE_DIR}/resource to $<TARGET_FILE_DIR:${PROJECT_NAME}>/resource"
+# add symbolic link to resource folder to build directory for debugging in vscode
+# add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+#     COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/resource $<TARGET_FILE_DIR:${PROJECT_NAME}>/resource
+#     COMMENT "symbolic link resource folder from ${CMAKE_CURRENT_SOURCE_DIR}/resource to $<TARGET_FILE_DIR:${PROJECT_NAME}>/resource"
+# )
+
+add_custom_command(TARGET ${PROJECT_NAME}
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/bin/$<CONFIG>
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:${PROJECT_NAME}> ${CMAKE_SOURCE_DIR}/bin/$<CONFIG>
+    COMMAND ${CMAKE_COMMAND} -E $<IF:$<CONFIG:Debug>,copy_if_different,true> $<TARGET_FILE_DIR:${PROJECT_NAME}>/${PROJECT_NAME}.pdb ${CMAKE_SOURCE_DIR}/bin/$<CONFIG>
+    COMMAND ${CMAKE_COMMAND} -E $<IF:$<CONFIG:RelWithDebInfo>,copy_if_different,true> $<TARGET_FILE_DIR:${PROJECT_NAME}>/${PROJECT_NAME}.pdb ${CMAKE_SOURCE_DIR}/bin/$<CONFIG>
+    COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/resource ${CMAKE_SOURCE_DIR}/bin/$<CONFIG>/resource
 )

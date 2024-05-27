@@ -56,11 +56,11 @@ std::filesystem::path FileDialog::OpenFolder()
                 if (SUCCEEDED(hr))
                 {
                     std::wstring folderPathWstr(pszFolderPath);
-                    std::string folderPath(folderPathWstr.begin(), folderPathWstr.end());
+                    // std::string folderPath(folderPathWstr.begin(), folderPathWstr.end());
                     CoTaskMemFree(pszFolderPath);
                     pShellItem->Release();
                     pFileDialog->Release();
-                    return std::filesystem::path(folderPath);
+                    return std::filesystem::path(pszFolderPath);
                 }
                 pShellItem->Release();
             }
