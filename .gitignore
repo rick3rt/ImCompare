@@ -2,6 +2,7 @@ build/
 .vscode/
 archive/
 vendor/
+bin/
 !vendor/CMakelists.txt
 
 # Prerequisites
