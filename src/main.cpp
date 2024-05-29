@@ -3,7 +3,7 @@
 
 void runApp()
 {
-    Explorer app("DataExplorer", 1280, 760, 0, nullptr);
+    Explorer app("ImCompare", 1280, 760, 0, nullptr);
     app.Run();
 }
 

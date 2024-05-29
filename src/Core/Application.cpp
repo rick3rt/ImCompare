@@ -117,7 +117,7 @@ Application::Application(std::string title, int w, int h, int argc, char const *
     ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    // load fonts
+        // load fonts
     m_fonts["menu"] = io.Fonts->AddFontFromFileTTF("resource/fonts/Roboto-Medium.ttf", 16.0f);
     // m_fonts["mono"] = io.Fonts->AddFontFromFileTTF("resource/fonts/ProggyClean.ttf", 14.0f);
     // m_fonts["mono"] = io.Fonts->AddFontFromFileTTF("resource/fonts/ProggyTiny.ttf", 14.0f);

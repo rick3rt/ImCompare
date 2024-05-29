@@ -16,16 +16,13 @@ bool FolderManager::Update()
             SetRoot(rootPath);
         }
         ImGui::SameLine();
-        if (ImGui::Button("Update"))
-        {
-            ClearFileSelection(); // clear references to old nodes
-            ClearSelection();     // clear references to old nodes
-            m_rootNode = CreateDirectryNodeTreeFromPath(m_rootPath);
-        }
+        if (ImGui::Button("Update")) { UpdateRoot(); }
         ImGui::SameLine();
         ImGui::Text(m_rootNode.FullPath.c_str());
+        // ImGui::SameLine();
+        // ImGui::Text("CurrentMaxLevel: %i", m_CurrentMaxLevel);
         ImGui::SameLine();
-        ImGui::Text("CurrentMaxLevel: %i", m_CurrentMaxLevel);
+        if (ImGui::Checkbox("Hide Empty Folders", &m_HideEmptyFolders)) { UpdateRoot(); }
 
         bool file_clicked = RecursivelyDisplayDirectoryNode(GetRootNode());
         if (file_clicked) { RenderFileSelection(); }
@@ -43,9 +40,14 @@ void FolderManager::SetRoot(const std::filesystem::path &rootPath)
         return;
     }
     m_rootPath = rootPath;
+    UpdateRoot();
+}
+
+void FolderManager::UpdateRoot()
+{
     ClearFileSelection(); // clear references to old nodes
     ClearSelection();     // clear references to old nodes
-    m_rootNode = CreateDirectryNodeTreeFromPath(m_rootPath);
+    m_rootNode = CreateDirectryNodeTreeFromPath(m_rootPath, m_HideEmptyFolders);
 }
 
 void FolderManager::ClearSelection()
@@ -89,13 +91,6 @@ void FolderManager::PropagateSelection(int level)
             it = m_SelectedFiles.erase(it);
         }
     }
-
-    // for (int i = level + 1; i < m_Selection.size()-1; i++)
-    // {
-    //     const DirectoryNode *children = m_Selection[i].second;
-    //     if (children == nullptr) { continue; }
-
-    // }
 }
 
 void FolderManager::RenderFileSelection()
@@ -138,6 +133,10 @@ bool FolderManager::RecursivelyDisplayDirectoryNode(const DirectoryNode &parentN
         {
             const DirectoryNode &child = parentNode.Children[i];
             const bool is_selected = (m_Selection[level].first == i);
+
+            // check if child is directory and hide empty folders (DOESNT WORK)
+            // if (child.IsDirectory && child.Children.empty() && m_HideEmptyFolders) { continue; }
+
             // const bool show_selected = (is_selected || found);
             if (ImGui::Selectable(child.FileName.c_str(), is_selected))
             {
@@ -152,20 +151,6 @@ bool FolderManager::RecursivelyDisplayDirectoryNode(const DirectoryNode &parentN
                 {
                     LOG_INFO("Control down {0}", ImGui::GetIO().KeyCtrl);
                     m_SelectedFiles.push_back(SelectedFileRef(level, i, &child));
-
-                    // detect if cntrl is pressed
-                    // if (!ImGui::GetIO().KeyCtrl)
-                    // else
-                    // {
-                    //     // remove file from selection
-                    //     for (auto it = m_SelectedFiles.begin(); it != m_SelectedFiles.end();)
-                    //     {
-                    //         if (it->level == level && it->index == i && it->node == &child)
-                    //             it = m_SelectedFiles.erase(it);
-                    //         else
-                    //             ++it;
-                    //     }
-                    // }
                 }
                 clicked = true;
             }
@@ -213,7 +198,8 @@ void FolderManager::IncrementFolder(int level)
 
 // static functions
 
-DirectoryNode FolderManager::CreateDirectryNodeTreeFromPath(const std::filesystem::path &rootPath)
+DirectoryNode FolderManager::CreateDirectryNodeTreeFromPath(const std::filesystem::path &rootPath,
+                                                            bool ignoreEmpty)
 {
     DirectoryNode node;
     node.FullPath = rootPath.string();
@@ -221,7 +207,7 @@ DirectoryNode FolderManager::CreateDirectryNodeTreeFromPath(const std::filesyste
     node.IsDirectory = true;
 
     std::filesystem::directory_iterator it(rootPath);
-    RecursivelyAddDirectoryNodes(node, it);
+    RecursivelyAddDirectoryNodes(node, it, ignoreEmpty);
 
     return node;
 }
@@ -241,7 +227,8 @@ void FolderManager::RecursivelyGetFiles(const DirectoryNode &node, std::vector<D
 }
 
 void FolderManager::RecursivelyAddDirectoryNodes(DirectoryNode &parentNode,
-                                                 std::filesystem::directory_iterator directoryIterator)
+                                                 std::filesystem::directory_iterator directoryIterator,
+                                                 bool ignoreEmpty)
 {
     // directoryIterator
     for (const auto &entry : directoryIterator)
@@ -250,11 +237,17 @@ void FolderManager::RecursivelyAddDirectoryNodes(DirectoryNode &parentNode,
         node.FullPath = entry.path().string();
         node.FileName = entry.path().filename().string();
         node.IsDirectory = entry.is_directory();
-        parentNode.Children.push_back(node);
+        // -optional- dont add empty nodes
+
+        if (!(ignoreEmpty && std::filesystem::is_empty(entry.path())))
+        {
+            parentNode.Children.push_back(node);
+        }
+
         if (entry.is_directory())
         {
             std::filesystem::directory_iterator it(entry);
-            RecursivelyAddDirectoryNodes(parentNode.Children.back(), it);
+            RecursivelyAddDirectoryNodes(parentNode.Children.back(), it, ignoreEmpty);
         }
     }
 

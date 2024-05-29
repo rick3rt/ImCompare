@@ -40,13 +40,15 @@ class FolderManager
     DirectoryNode m_rootNode;
     selection_t m_Selection;
     int m_CurrentMaxLevel = 0;
+    bool m_HideEmptyFolders = true;
     std::vector<SelectedFileRef> m_SelectedFiles;
 
   public:
     FolderManager()
     {
         ClearSelection();
-        SetRoot("resource");
+        // SetRoot("resource");
+        SetRoot("\\\\tudelft.net\\staff-umbrella\\tfUSBrain\\processed_data\\TC_batch");
     }
     ~FolderManager() {}
 
@@ -54,6 +56,7 @@ class FolderManager
     bool Update();
 
     void SetRoot(const std::filesystem::path &rootPath);
+    void UpdateRoot();
 
     const std::filesystem::path &GetRoot() const { return m_rootPath; }
     const DirectoryNode &GetRootNode() const { return m_rootNode; }
@@ -71,10 +74,12 @@ class FolderManager
     void RenderFileSelection();
 
     // static functions
-    static DirectoryNode CreateDirectryNodeTreeFromPath(const std::filesystem::path &rootPath);
+    static DirectoryNode CreateDirectryNodeTreeFromPath(const std::filesystem::path &rootPath,
+                                                        bool ignoreEmpty = false);
     static void RecursivelyGetFiles(const DirectoryNode &node, std::vector<DirectoryNode> &files);
     static void RecursivelyAddDirectoryNodes(DirectoryNode &parentNode,
-                                             std::filesystem::directory_iterator directoryIterator);
+                                             std::filesystem::directory_iterator directoryIterator,
+                                             bool ignoreEmpty = false);
 
     static void RecursivelyPrintDirectoryNode(const DirectoryNode &parentNode, int level = 0);
 };
