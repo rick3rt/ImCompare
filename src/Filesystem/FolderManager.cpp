@@ -16,6 +16,13 @@ bool FolderManager::Update()
             SetRoot(rootPath);
         }
         ImGui::SameLine();
+        if (ImGui::Button("Update"))
+        {
+            ClearFileSelection(); // clear references to old nodes
+            ClearSelection();     // clear references to old nodes
+            m_rootNode = CreateDirectryNodeTreeFromPath(m_rootPath);
+        }
+        ImGui::SameLine();
         ImGui::Text(m_rootNode.FullPath.c_str());
         ImGui::SameLine();
         ImGui::Text("CurrentMaxLevel: %i", m_CurrentMaxLevel);
