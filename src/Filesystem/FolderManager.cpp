@@ -239,11 +239,10 @@ void FolderManager::RecursivelyAddDirectoryNodes(DirectoryNode &parentNode,
         node.IsDirectory = entry.is_directory();
         // -optional- dont add empty nodes
 
-        if (!(ignoreEmpty && std::filesystem::is_empty(entry.path())))
-        {
-            parentNode.Children.push_back(node);
-        }
+        bool isempty = std::filesystem::is_empty(entry.path());
+        if (ignoreEmpty && isempty) { continue; }
 
+        parentNode.Children.push_back(node);
         if (entry.is_directory())
         {
             std::filesystem::directory_iterator it(entry);
