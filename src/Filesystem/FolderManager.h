@@ -68,10 +68,11 @@ class FolderManager
     // returns true if an item is clicked
     bool RecursivelyDisplayDirectoryNode(const DirectoryNode &parentNode, int level = 0);
 
-    void IncrementFolder(int level);
+    void IncrementFolder(int level, int increment = 1);
     void PropagateSelection(int level);
 
     void RenderFileSelection();
+    void PrintSelection();
 
     // static functions
     static DirectoryNode CreateDirectryNodeTreeFromPath(const std::filesystem::path &rootPath,

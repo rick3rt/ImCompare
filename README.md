@@ -12,4 +12,5 @@ Automatically handled by CMake.
 
 ## Todo's
 - folder history
-- ? 
+- hold file selection when moving to different folder / aka remember for
+  specific folder contents. names repeat anyway 

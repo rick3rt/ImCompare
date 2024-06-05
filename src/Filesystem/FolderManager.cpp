@@ -23,6 +23,8 @@ bool FolderManager::Update()
         // ImGui::Text("CurrentMaxLevel: %i", m_CurrentMaxLevel);
         ImGui::SameLine();
         if (ImGui::Checkbox("Hide Empty Folders", &m_HideEmptyFolders)) { UpdateRoot(); }
+        ImGui::SameLine();
+        if (ImGui::Button("Print Selection")) { PrintSelection(); }
 
         bool file_clicked = RecursivelyDisplayDirectoryNode(GetRootNode());
         if (file_clicked) { RenderFileSelection(); }
@@ -97,10 +99,10 @@ void FolderManager::RenderFileSelection()
 {
     auto &viewer = Explorer::Get().GetViewer();
     viewer.ClearItems();
-    LOG_DEBUG("RenderFileSelection");
+    LOG_TRACE("RenderFileSelection");
     for (auto &sf : m_SelectedFiles)
     {
-        LOG_DEBUG("Selected file: level {} idx {} name {}", sf.level, sf.index, sf.node->FileName);
+        LOG_TRACE("Selected file: level {} idx {} name {}", sf.level, sf.index, sf.node->FileName);
         const DirectoryNode *node = sf.node;
         if (!node || node->IsDirectory) { continue; } // skip directories
         std::string filename = node->FileName;
@@ -110,14 +112,20 @@ void FolderManager::RenderFileSelection()
     }
 }
 
-bool fileInSelection(const std::vector<SelectedFileRef> &selection, int level, int index,
-                     const DirectoryNode *node)
+/**
+ * @brief Check if the file is in the selection. return the index if found.
+ * Returns -1 if nothing found.
+ */
+int fileInSelection(const std::vector<SelectedFileRef> &selection, int level, int index,
+                    const DirectoryNode *node)
 {
+    int i = 0;
     for (const auto &file : selection)
     {
-        if (file.level == level && file.index == index && file.node == node) { return true; }
+        if (file.level == level && file.index == index && file.node == node) { return i; }
+        i++;
     }
-    return false;
+    return -1;
 }
 
 bool FolderManager::RecursivelyDisplayDirectoryNode(const DirectoryNode &parentNode, int level)
@@ -140,17 +148,24 @@ bool FolderManager::RecursivelyDisplayDirectoryNode(const DirectoryNode &parentN
             // const bool show_selected = (is_selected || found);
             if (ImGui::Selectable(child.FileName.c_str(), is_selected))
             {
-                if (ImGui::GetIO().KeyCtrl) m_SelectedFiles.clear();
+                bool keyAltDown = ImGui::GetIO().KeyAlt;
+                bool keyCtrlDown = ImGui::GetIO().KeyCtrl;
+                LOG_TRACE("Control down {0} - Alt down {0}", keyCtrlDown, keyAltDown);
+
+                if (keyCtrlDown) m_SelectedFiles.clear();
 
                 m_Selection[level] = std::make_pair(i, &child);
                 PropagateSelection(level); // update other child nodes
 
                 // if child is file, add to selected files
-                const bool found = fileInSelection(m_SelectedFiles, level, i, &child);
-                if (!child.IsDirectory && !found)
+                int found_idx = fileInSelection(m_SelectedFiles, level, i, &child);
+                if (!child.IsDirectory && found_idx == -1 && !keyAltDown)
                 {
-                    LOG_INFO("Control down {0}", ImGui::GetIO().KeyCtrl);
                     m_SelectedFiles.push_back(SelectedFileRef(level, i, &child));
+                } else if (!child.IsDirectory && found_idx >= 0 && keyAltDown)
+                {
+                    // already found, check for alt down to remove entry
+                    m_SelectedFiles.erase(m_SelectedFiles.begin() + found_idx);
                 }
                 clicked = true;
             }
@@ -170,15 +185,13 @@ bool FolderManager::RecursivelyDisplayDirectoryNode(const DirectoryNode &parentN
     return clicked;
 }
 
-void FolderManager::IncrementFolder(int level)
+void FolderManager::IncrementFolder(int level, int increment /* = 1 */)
 {
-    // typedef std::pair<int, const DirectoryNode *> indexed_selection_t;
-    // typedef std::array<indexed_selection_t, 20> selection_t;
-    // selection_t m_Selection;
-    LOG_DEBUG("IncrementFolder: level {}", level);
+
+    LOG_TRACE("IncrementFolder: level {}", level);
     for (int i = level; i < m_CurrentMaxLevel; i++)
     {
-        LOG_DEBUG("IncrementFolder: level {} index {} node {}", i, m_Selection[i].first,
+        LOG_TRACE("IncrementFolder: level {} index {} node {}", i, m_Selection[i].first,
                   m_Selection[i].second->FileName);
     }
 
@@ -188,7 +201,7 @@ void FolderManager::IncrementFolder(int level)
     else
         parent = &m_rootNode;
 
-    int index = (m_Selection[level].first + 1) % parent->Children.size();
+    int index = (m_Selection[level].first + increment) % parent->Children.size();
     m_Selection[level].first = index;
     m_Selection[level].second = &(parent->Children[index]);
 
@@ -196,7 +209,28 @@ void FolderManager::IncrementFolder(int level)
     RenderFileSelection();
 }
 
+bool str_replace(std::string &str, const std::string &from, const std::string &to)
+{
+    size_t start_pos = str.find(from);
+    if (start_pos == std::string::npos) return false;
+    str.replace(start_pos, from.length(), to);
+    return true;
+}
+
+void FolderManager::PrintSelection()
+{
+
+    if (m_SelectedFiles.empty()) return;
+    auto sf = m_SelectedFiles[0];
+    std::string path = sf.node->FullPath;
+    // replace part of path, replace rootPath by nothing
+    str_replace(path, m_rootPath.string(), "");
+    LOG_INFO("{}", path);
+}
+
+// =============================================================================
 // static functions
+// =============================================================================
 
 DirectoryNode FolderManager::CreateDirectryNodeTreeFromPath(const std::filesystem::path &rootPath,
                                                             bool ignoreEmpty)
