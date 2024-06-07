@@ -5,6 +5,7 @@
 #include <vector>
 #include <array>
 #include "DirectoryNode.h"
+#include "FolderHistory.h"
 
 // indexed_selection_t constist of an index in the preceding folder and a pointer to the selected
 // DirectoryNode
@@ -42,13 +43,15 @@ class FolderManager
     int m_CurrentMaxLevel = 0;
     bool m_HideEmptyFolders = true;
     std::vector<SelectedFileRef> m_SelectedFiles;
+    FolderHistory m_FolderHistory;
 
   public:
     FolderManager()
     {
         ClearSelection();
-        // SetRoot("resource");
-        SetRoot("\\\\tudelft.net\\staff-umbrella\\tfUSBrain\\processed_data\\TC_batch");
+        // SetRoot("resource"); // set root to demo. history manager will set the last used folder
+        // SetRoot("\\\\tudelft.net\\staff-umbrella\\tfUSBrain\\processed_data\\TC_batch");
+        SetRoot(m_FolderHistory.getLatestFolder());
     }
     ~FolderManager() {}
 
@@ -73,6 +76,9 @@ class FolderManager
 
     void RenderFileSelection();
     void PrintSelection();
+
+    // getter for FolderHistory
+    FolderHistory &GetFolderHistory() { return m_FolderHistory; }
 
     // static functions
     static DirectoryNode CreateDirectryNodeTreeFromPath(const std::filesystem::path &rootPath,

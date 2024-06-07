@@ -42,6 +42,8 @@ void Menu::KeyboardShortcuts()
 
 void Menu::DrawMenu()
 {
+    bool keyCtrl = ImGui::GetIO().KeyCtrl;
+
     // add imgui menu with file
     if (ImGui::BeginMainMenuBar())
     {
@@ -62,6 +64,27 @@ void Menu::DrawMenu()
         {
             Explorer::Get().GetFolderManager().ClearFileSelection();
             Explorer::Get().GetViewer().ClearItems();
+        }
+
+        if (ImGui::BeginMenu("History"))
+        {
+            if (ImGui::MenuItem("Clear"))
+            {
+                Explorer::Get().GetFolderManager().GetFolderHistory().clearHistory();
+            }
+            ImGui::Separator();
+            auto history = Explorer::Get().GetFolderManager().GetFolderHistory().getHistory();
+            for (auto &folder : history)
+            {
+                if (ImGui::MenuItem(folder.c_str()))
+                {
+                    if (!keyCtrl)
+                        Explorer::Get().GetFolderManager().SetRoot(folder);
+                    else
+                        Explorer::Get().GetFolderManager().GetFolderHistory().removeFolder(folder);
+                }
+            }
+            ImGui::EndMenu();
         }
 
         ImGui::EndMainMenuBar();

@@ -41,6 +41,7 @@ void FolderManager::SetRoot(const std::filesystem::path &rootPath)
         LOG_ERROR("Root path does not exist: {0}", m_rootPath.string());
         return;
     }
+    m_FolderHistory.addFolder(rootPath.string());
     m_rootPath = rootPath;
     UpdateRoot();
 }

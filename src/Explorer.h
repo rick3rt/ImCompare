@@ -5,7 +5,6 @@
 #include "Core/Application.h"
 #include "Core/Menu.h"
 #include "Renderer/Viewer.h"
-// #include "CompareManager.h"
 #include "Filesystem/FolderManager.h"
 
 class Explorer : public Application
@@ -33,7 +32,6 @@ class Explorer : public Application
   private:
     Menu m_Menu;
     Viewer m_Viewer;
-    // CompareManager m_CompareManager;
     FolderManager m_FolderManager;
 
   private:

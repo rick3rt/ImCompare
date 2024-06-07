@@ -13,11 +13,7 @@ Explorer::Explorer(std::string title, int w, int h, int argc, char const *argv[]
 
 Explorer::~Explorer() { LOG_INFO("Deleting Explorer"); }
 
-void Explorer::Start()
-{
-
-    m_FolderManager.SetRoot("C:/Users/rickw/LocalDocuments/Code/C++/DataExplorer/resource/example/");
-}
+void Explorer::Start() {}
 
 void Explorer::Update()
 {
