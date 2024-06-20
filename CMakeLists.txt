@@ -40,6 +40,7 @@ set(SRCS_TO_BUILD
     ${PROJECT_SOURCE_DIR}/src/Core/Core.h
     ${PROJECT_SOURCE_DIR}/src/Core/Log.cpp
     ${PROJECT_SOURCE_DIR}/src/Core/Menu.cpp
+    ${PROJECT_SOURCE_DIR}/src/Core/Settings.cpp
     ${PROJECT_SOURCE_DIR}/src/Core/Application.cpp
     ${PROJECT_SOURCE_DIR}/src/Renderer/Viewer.cpp
     ${PROJECT_SOURCE_DIR}/src/Renderer/ImageLoader.cpp

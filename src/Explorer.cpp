@@ -13,10 +13,11 @@ Explorer::Explorer(std::string title, int w, int h, int argc, char const *argv[]
 
 Explorer::~Explorer() { LOG_INFO("Deleting Explorer"); }
 
-void Explorer::Start() {}
+void Explorer::Start() { m_Settings.Start(); }
 
 void Explorer::Update()
 {
+    m_Settings.Update();
     m_Menu.Update();
     m_FolderManager.Update();
     m_Viewer.Update();

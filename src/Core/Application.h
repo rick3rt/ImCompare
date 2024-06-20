@@ -28,6 +28,9 @@ class Application
     bool isRunning() const { return m_Running; }
     void Stop();
 
+    std::map<std::string, ImFont *> GetFonts() { return m_fonts; }
+    void SetFont(const std::string &key);
+
     virtual void OnDrop(std::vector<std::string> files) {} // dropping files from OS
 
   private:

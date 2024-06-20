@@ -32,6 +32,32 @@ static void glfw_drop_callback(GLFWwindow *window, int count, const char **paths
     Application::Get().OnDrop(files);
 }
 
+// sprintf equivalent for std::string
+std::string string_format(const std::string fmt_str, ...)
+{
+    int final_n,
+        n = ((int)fmt_str.size()) * 2; /* Reserve two times as much as the length of the fmt_str */
+    std::string str;
+    std::unique_ptr<char[]> formatted;
+    va_list ap;
+    while (1)
+    {
+        formatted.reset(new char[n]); /* Wrap the plain char array into the unique_ptr */
+        strcpy(&formatted[0], fmt_str.c_str());
+        va_start(ap, fmt_str);
+        final_n = vsnprintf(&formatted[0], n, fmt_str.c_str(), ap);
+        va_end(ap);
+        if (final_n < 0 || final_n >= n)
+        {
+            n += abs(final_n - n + 1);
+        } else
+        {
+            break;
+        }
+    }
+    return std::string(formatted.get());
+}
+
 Application *Application::s_Instance = nullptr;
 
 Application::Application(std::string title, int w, int h, int argc, char const *argv[])
@@ -117,12 +143,21 @@ Application::Application(std::string title, int w, int h, int argc, char const *
     ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-        // load fonts
+    // load fonts
     m_fonts["menu"] = io.Fonts->AddFontFromFileTTF("resource/fonts/Roboto-Medium.ttf", 16.0f);
     // m_fonts["mono"] = io.Fonts->AddFontFromFileTTF("resource/fonts/ProggyClean.ttf", 14.0f);
     // m_fonts["mono"] = io.Fonts->AddFontFromFileTTF("resource/fonts/ProggyTiny.ttf", 14.0f);
     m_fonts["mono"] = io.Fonts->AddFontDefault();
     // io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 12.0f);
+
+    // push fonts with different sizes
+    for (int i = 5; i < 16; i++)
+    {
+        std::string key = string_format("menu_size%02i", i);
+        LOG_INFO("Loading font: {}", key);
+        m_fonts[key] = io.Fonts->AddFontFromFileTTF("resource/fonts/Roboto-Medium.ttf", (float)i);
+    }
+    // SetFont("menu_size05");
 }
 
 Application::~Application()
@@ -190,4 +225,10 @@ void Application::Stop()
 {
     LOG_INFO("Stopping Application");
     m_Running = false;
+}
+
+void Application::SetFont(const std::string &key)
+{
+    ImGuiIO &io = ImGui::GetIO();
+    io.FontDefault = m_fonts[key];
 }

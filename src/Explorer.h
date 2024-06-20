@@ -4,6 +4,7 @@
 #include "Core/Log.h"
 #include "Core/Application.h"
 #include "Core/Menu.h"
+#include "Core/Settings.h"
 #include "Renderer/Viewer.h"
 #include "Filesystem/FolderManager.h"
 
@@ -33,6 +34,7 @@ class Explorer : public Application
     Menu m_Menu;
     Viewer m_Viewer;
     FolderManager m_FolderManager;
+    Settings m_Settings;
 
   private:
     static Explorer *s_Instance;
