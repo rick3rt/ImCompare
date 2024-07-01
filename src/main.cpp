@@ -13,12 +13,25 @@ int main()
 {
     Log::Init(); // initialize logger
     Log::SetLogLevel(spdlog::level::debug);
+
     runApp();
+    return 0;
 
     // LOG_INFO("Testing FolderManager");
     // FolderManager folderManager;
-    // folderManager.SetRoot("C:/Users/rickw/LocalDocuments/Code/C++/DataExplorer/resource/example/");
+    // folderManager.SetRoot("C:/Users/verasonics/Documents/Rick/REPOS/ImCompare/resource/example/folders");
     // const DirectoryNode &rootNode = folderManager.GetRootNode();
+    // // // folderManager.RecursivelyPrintDirectoryNode(rootNode);
+
+    // DirectoryNode node = rootNode; // copy
+    // DirectoryNode nodeflat = flattenFiles(node);
+
+    // LOG_INFO("== ORIGINAL: == ");
+    // folderManager.RecursivelyPrintDirectoryNode(node);
+    // LOG_INFO("== FLATTENED: == ");
+    // folderManager.RecursivelyPrintDirectoryNode(nodeflat);
+
+    // LOG_INFO("== ORIGINAL ROOT NODE: == ");
     // folderManager.RecursivelyPrintDirectoryNode(rootNode);
 
     // DirectoryNode node = FolderManager::CreateDirectryNodeTreeFromPath(
@@ -33,40 +46,4 @@ int main()
     // test_operators();
 
     return 0;
-}
-
-void test_fun(int fn(bool a, bool b))
-{
-    LOG_INFO("0 0 = {} ", fn(false, false));
-    LOG_INFO("1 0 = {} ", fn(true, false));
-    LOG_INFO("0 1 = {} ", fn(false, true));
-    LOG_INFO("1 1 = {} ", fn(true, true));
-}
-
-void test_operators()
-{
-    LOG_INFO("Testing operators");
-
-    LOG_INFO("Testing AND operator");
-    test_fun([](bool a, bool b) { return static_cast<int>(a && b); });
-
-    LOG_INFO("Testing OR operator");
-    test_fun([](bool a, bool b) { return static_cast<int>(a || b); });
-
-    LOG_INFO("Testing XOR operator");
-    test_fun([](bool a, bool b) { return static_cast<int>(a ^ b); });
-
-    LOG_INFO("Testing XAND operator");
-    test_fun([](bool a, bool b) { return static_cast<int>(!(a && b)); });
-
-    LOG_INFO("Testing XNOR operator");
-    test_fun([](bool a, bool b) { return static_cast<int>(!(a ^ b)); });
-
-    LOG_INFO("Testing NAND operator");
-    test_fun([](bool a, bool b) { return static_cast<int>(!(a || b)); });
-
-    LOG_INFO("Testing ??? operator");
-    test_fun([](bool a, bool b) { return static_cast<int>((a && b) || b); });
-
-    LOG_INFO("Testing NOT operator");
 }

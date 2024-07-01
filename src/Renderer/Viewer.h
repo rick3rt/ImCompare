@@ -46,6 +46,7 @@ class Viewer
     // some functions for keyboard control
     void ToggleSideBySide() { m_SideBySide = !m_SideBySide; }
     void ToggleAutoFit() { m_AutoFit = !m_AutoFit; }
+    void ToggleLinkAxes() { m_LinkAxes = !m_LinkAxes; }
     void ShowNextTab()
     {
         m_SelectedTab++;
@@ -59,6 +60,7 @@ class Viewer
   private:
     bool m_SideBySide = false;
     bool m_AutoFit = true;
+    bool m_LinkAxes = true;
     int m_SelectedTab = -1;
     std::vector<std::shared_ptr<ViewData>> m_Items;
     ImPlotRect m_AxesLimits;

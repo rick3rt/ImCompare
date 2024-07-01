@@ -38,4 +38,5 @@ void Settings::Update()
             ImGui::EndCombo();
         }
     }
+    ImGui::End();
 }

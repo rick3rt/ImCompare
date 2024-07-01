@@ -51,8 +51,11 @@ void Viewer::DrawItem(const int index)
     if (ImPlot::BeginPlot(buf, ImVec2(-1, -1), flags))
     {
         ImPlot::SetupAxes(NULL, NULL, axis_flags, axis_flags);
-        ImPlot::SetupAxisLinks(ImAxis_X1, &m_AxesLimits.X.Min, &m_AxesLimits.X.Max);
-        ImPlot::SetupAxisLinks(ImAxis_Y1, &m_AxesLimits.Y.Min, &m_AxesLimits.Y.Max);
+        if (m_LinkAxes)
+        {
+            ImPlot::SetupAxisLinks(ImAxis_X1, &m_AxesLimits.X.Min, &m_AxesLimits.X.Max);
+            ImPlot::SetupAxisLinks(ImAxis_Y1, &m_AxesLimits.Y.Min, &m_AxesLimits.Y.Max);
+        }
         ImPlot::PlotImage(info, (void *)(intptr_t)imgtex.Texture(), bounds[0], bounds[1]);
         ImPlot::EndPlot();
     }
@@ -110,6 +113,9 @@ void Viewer::Update()
         ImGui::Checkbox("Auto fit", &m_AutoFit);
         ImGui::SameLine();
         ImGui::Checkbox("Side by Side", &m_SideBySide);
+        ImGui::SameLine();
+        ImGui::Checkbox("Link Axes", &m_LinkAxes);
+
         if (m_SideBySide)
             DrawSideBySide();
         else

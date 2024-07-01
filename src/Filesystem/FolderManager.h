@@ -41,7 +41,7 @@ class FolderManager
     DirectoryNode m_rootNode;
     selection_t m_Selection;
     int m_CurrentMaxLevel = 0;
-    bool m_HideEmptyFolders = true;
+    bool m_FlattenDirFiles = false;
     std::vector<SelectedFileRef> m_SelectedFiles;
     FolderHistory m_FolderHistory;
 
@@ -81,12 +81,10 @@ class FolderManager
     FolderHistory &GetFolderHistory() { return m_FolderHistory; }
 
     // static functions
-    static DirectoryNode CreateDirectryNodeTreeFromPath(const std::filesystem::path &rootPath,
-                                                        bool ignoreEmpty = false);
+    static DirectoryNode CreateDirectryNodeTreeFromPath(const std::filesystem::path &rootPath);
     static void RecursivelyGetFiles(const DirectoryNode &node, std::vector<DirectoryNode> &files);
     static void RecursivelyAddDirectoryNodes(DirectoryNode &parentNode,
-                                             std::filesystem::directory_iterator directoryIterator,
-                                             bool ignoreEmpty = false);
+                                             std::filesystem::directory_iterator directoryIterator);
 
     static void RecursivelyPrintDirectoryNode(const DirectoryNode &parentNode, int level = 0);
 };
