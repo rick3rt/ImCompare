@@ -42,6 +42,7 @@ class FolderManager
     selection_t m_Selection;
     int m_CurrentMaxLevel = 0;
     bool m_FlattenDirFiles = false;
+    bool m_OnlyShowImageFiles = true;
     std::vector<SelectedFileRef> m_SelectedFiles;
     FolderHistory m_FolderHistory;
 

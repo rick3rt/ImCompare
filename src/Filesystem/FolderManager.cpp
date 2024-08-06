@@ -61,6 +61,26 @@ DirectoryNode flattenFilesInFolder(DirectoryNode parent)
     return newnode;
 }
 
+DirectoryNode filterImagesRecursive(DirectoryNode parent)
+{
+    if (parent.Children.size() == 0) return parent;
+
+    // backward iterate, since we remove items
+    for (int i = parent.Children.size() - 1; i >= 0; --i)
+    {
+        DirectoryNode child = parent.Children[i];
+        if (child.isDirectory())
+        {
+            parent.Children[i] = filterImagesRecursive(child);
+        } else
+        {
+            if (!child.isImage()) { parent.Children.erase(parent.Children.begin() + i); }
+        }
+    }
+
+    return parent;
+}
+
 bool FolderManager::Update()
 {
     if (ImGui::Begin("Explorer"))
@@ -78,6 +98,8 @@ bool FolderManager::Update()
         // ImGui::Text("CurrentMaxLevel: %i", m_CurrentMaxLevel);
         ImGui::SameLine();
         if (ImGui::Checkbox("Flatten Dir/Files", &m_FlattenDirFiles)) { UpdateRoot(); }
+        ImGui::SameLine();
+        if (ImGui::Checkbox("Only show images", &m_OnlyShowImageFiles)) { UpdateRoot(); }
         ImGui::SameLine();
         if (ImGui::Button("Print Selection")) { PrintSelection(); }
 
@@ -106,6 +128,7 @@ void FolderManager::UpdateRoot()
     ClearFileSelection(); // clear references to old nodes
     ClearSelection();     // clear references to old nodes
     m_rootNode = CreateDirectryNodeTreeFromPath(m_rootPath);
+    if (m_OnlyShowImageFiles) { m_rootNode = filterImagesRecursive(m_rootNode); }
     if (m_FlattenDirFiles) { m_rootNode = flattenFilesInFolder(m_rootNode); }
 }
 

@@ -17,4 +17,9 @@ struct DirectoryNode
     }
 
     bool isDirectory() const { return IsDirectory; }
+    bool isImage() const
+    { // return true if .png/.jpg/.jpeg file
+        return isDirectory() || FileName.find(".png") != std::string::npos ||
+               FileName.find(".jpg") != std::string::npos || FileName.find(".jpeg") != std::string::npos;
+    }
 };
